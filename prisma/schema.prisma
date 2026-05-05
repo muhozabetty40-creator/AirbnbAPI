@@ -19,6 +19,8 @@ model User {
   updatedAt        DateTime  @updatedAt
   resetToken       String?
   resetTokenExpiry DateTime?
+  avatar           String?
+  avatarPublicId   String?
 
   listings         Listing[]
   bookings         Booking[]
@@ -44,6 +46,7 @@ model Listing {
 model Booking {
   id         Int           @id @default(autoincrement())
   checkIn    DateTime
+  checkOut   DateTime
   totalPrice Float
   status     BookingStatus @default(PENDING)
   listingId  Int
@@ -57,6 +60,7 @@ model Booking {
 model ListingPhoto {
   id         Int     @id @default(autoincrement())
   url        String
+  publicId   String
   listingId  Int
   listing    Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }
