@@ -1,20 +1,23 @@
 import { Router } from "express";
+import { strictLimiter } from "../middlewares/rateLimiter.js";
 import {
-  createListing,
-  deleteListing,
+  searchListings,
   getAllListings,
   getListingById,
-  getListingStats,
-  updateListing
+  createListing,
+  updateListing,
+  deleteListing,
 } from "../controllers/listings.controller.js";
+import { getListingStats } from "../controllers/stats.controller.js";
 
 const router = Router();
 
 router.get("/stats", getListingStats);
+router.get("/search", searchListings);
 router.get("/", getAllListings);
 router.get("/:id", getListingById);
-router.post("/", createListing);
-router.put("/:id", updateListing);
+router.post("/", strictLimiter, createListing);
+router.put("/:id", strictLimiter, updateListing);
 router.delete("/:id", deleteListing);
 
 export default router;

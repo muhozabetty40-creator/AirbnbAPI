@@ -1,18 +1,17 @@
 import { Router } from "express";
+import { strictLimiter } from "../middlewares/rateLimiter.js";
 import {
-  createBooking,
-  deleteBooking,
   getAllBookings,
   getBookingById,
-  updateBookingStatus
+  createBooking,
+  deleteBooking,
 } from "../controllers/bookings.controller.js";
 
 const router = Router();
 
 router.get("/", getAllBookings);
 router.get("/:id", getBookingById);
-router.post("/", createBooking);
+router.post("/", strictLimiter, createBooking);
 router.delete("/:id", deleteBooking);
-router.patch("/:id/status", updateBookingStatus);
 
 export default router;

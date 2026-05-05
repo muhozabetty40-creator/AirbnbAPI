@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -7,93 +8,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  HOST
-  GUEST
-}
-
-enum ListingType {
-  APARTMENT
-  HOUSE
-  VILLA
-  CABIN
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-}
-
 model User {
   id        Int       @id @default(autoincrement())
   name      String
   email     String    @unique
   username  String    @unique
-  password  String
   phone     String
-  role      Role      @default(GUEST)
+  role      String    @default("guest")
   avatar    String?
   bio       String?
-  createdAt DateTime  @default(now())
-  profile   Profile?
   listings  Listing[]
   bookings  Booking[]
+  reviews   Review[]
+  createdAt DateTime  @default(now())
+
+  @@index([name])
+  @@index([role])
 }
 
 model Listing {
-  id            Int          @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   title         String
   description   String
   location      String
   pricePerNight Float
   guests        Int
-  type          ListingType
+  type          String
   amenities     String[]
   rating        Float?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  host          User         @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  hostId        Int
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
   bookings      Booking[]
-  photos        ListingPhoto[]
+  reviews       Review[]
+  createdAt     DateTime  @default(now())
 
+  @@index([userId])
   @@index([location])
-  @@index([pricePerNight])
   @@index([type])
-  @@index([hostId])
-  @@index([type, location])
-}
-
-model Profile {
-  id      Int    @id @default(autoincrement())
-  bio     String?
-  website String?
-  country String?
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  Int    @unique
+  @@index([pricePerNight])
 }
 
 model Booking {
-  id         Int           @id @default(autoincrement())
-  checkIn    DateTime
-  checkOut   DateTime
-  totalPrice Float
-  status     BookingStatus @default(PENDING)
-  createdAt  DateTime      @default(now())
-  guest      User           @relation(fields: [guestId], references: [id], onDelete: Cascade)
-  guestId    Int
-  listing    Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  listingId  Int
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  listingId Int
+  checkIn   DateTime
+  checkOut  DateTime
+  guests    Int
+  total     Float
+  status    String   @default("confirmed")
+  user      User     @relation(fields: [userId], references: [id])
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  createdAt DateTime @default(now())
 
-  @@index([guestId])
+  @@index([userId])
   @@index([listingId])
-  @@index([listingId, checkIn, checkOut])
+  @@index([status])
 }
 
-model ListingPhoto {
-  id        Int     @id @default(autoincrement())
-  url       String
-  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String
+  userId    Int
   listingId Int
+  user      User     @relation(fields: [userId], references: [id])
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([listingId])
 }

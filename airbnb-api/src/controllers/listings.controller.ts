@@ -1,96 +1,68 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
-import { createListingSchema, updateListingSchema } from "../validators/listings.validator.js";
+import { getCache, setCache, deleteCache } from "../config/cache.js";
 
-const listingTypes = new Set(["APARTMENT", "HOUSE", "VILLA", "CABIN"]);
-const sortFields = new Set(["pricePerNight", "createdAt"]);
-
-const getString = (value: string | string[] | undefined): string | undefined =>
-  Array.isArray(value) ? value[0] : value;
-
-const parseId = (value: string | string[] | undefined): number | null => {
-  const idString = getString(value);
-
-  if (!idString) {
-    return null;
-  }
-
-  const id = Number(idString);
-  return Number.isNaN(id) ? null : id;
+const parseId = (v: string | string[] | undefined): number | null => {
+  const s = Array.isArray(v) ? v[0] : v;
+  const n = Number(s);
+  return !s || Number.isNaN(n) ? null : n;
 };
 
-const parseNumber = (value: unknown): number | null => {
-  const numberValue = Number(value);
-  return Number.isNaN(numberValue) ? null : numberValue;
+const parsePage = (page: unknown, limit: unknown) => {
+  const p = Math.max(1, parseInt(String(page || "1"), 10) || 1);
+  const l = Math.max(1, parseInt(String(limit || "10"), 10) || 10);
+  return { page: p, limit: l, skip: (p - 1) * l };
+};
+
+export const searchListings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { location, type, minPrice, maxPrice, guests, page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
+
+    const where: Record<string, unknown> = {};
+    if (location) where.location = { contains: String(location), mode: "insensitive" };
+    if (type) where.type = { equals: String(type), mode: "insensitive" };
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.pricePerNight = {
+        ...(minPrice !== undefined && { gte: Number(minPrice) }),
+        ...(maxPrice !== undefined && { lte: Number(maxPrice) }),
+      };
+    }
+    if (guests) where.guests = { gte: Number(guests) };
+
+    const [data, total] = await Promise.all([
+      prisma.listing.findMany({
+        where,
+        skip,
+        take: l,
+        include: { user: { select: { name: true, email: true } } },
+      }),
+      prisma.listing.count({ where }),
+    ]);
+
+    res.json({ data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getAllListings = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { location, type, maxPrice, page = "1", limit = "10", sortBy, order = "asc" } = req.query;
-    const where: Record<string, unknown> = {};
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
 
-    if (location) {
-      where.location = {
-        contains: String(location),
-        mode: "insensitive"
-      };
-    }
+    const cacheKey = `listings:${p}:${l}`;
+    const cached = getCache(cacheKey);
+    if (cached) return res.json(cached);
 
-    if (type) {
-      const normalizedType = String(type).trim().toUpperCase();
+    const [data, total] = await Promise.all([
+      prisma.listing.findMany({ skip, take: l, include: { user: { select: { name: true, email: true } } } }),
+      prisma.listing.count(),
+    ]);
 
-      if (!listingTypes.has(normalizedType)) {
-        return res.status(400).json({ message: "Invalid listing type" });
-      }
-
-      where.type = normalizedType;
-    }
-
-    const maxPriceNumber = parseNumber(maxPrice);
-
-    if (maxPrice !== undefined) {
-      if (maxPriceNumber === null) {
-        return res.status(400).json({ message: "Invalid maxPrice value" });
-      }
-
-      where.pricePerNight = {
-        lte: maxPriceNumber
-      };
-    }
-
-    const pageNumber = Math.max(1, parseInt(String(page), 10) || 1);
-    const limitNumber = Math.max(1, parseInt(String(limit), 10) || 10);
-    const skip = (pageNumber - 1) * limitNumber;
-    const sortField = sortFields.has(String(sortBy)) ? String(sortBy) : "createdAt";
-    const sortOrder = String(order).toLowerCase() === "desc" ? "desc" : "asc";
-
-    const listings = await prisma.listing.findMany({
-      where,
-      skip,
-      take: limitNumber,
-      orderBy: {
-        [sortField]: sortOrder
-      } as any,
-      select: {
-        id: true,
-        title: true,
-        location: true,
-        pricePerNight: true,
-        host: {
-          select: {
-            name: true,
-            avatar: true
-          }
-        },
-        _count: {
-          select: {
-            bookings: true
-          }
-        }
-      }
-    });
-
-    res.json(listings);
+    const result = { data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } };
+    setCache(cacheKey, result, 60);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -99,32 +71,14 @@ export const getAllListings = async (req: Request, res: Response, next: NextFunc
 export const getListingById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseId(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid listing id" });
-    }
+    if (id === null) return res.status(400).json({ message: "Invalid listing id" });
 
     const listing = await prisma.listing.findUnique({
       where: { id },
-      include: {
-        host: true,
-        bookings: {
-          include: {
-            guest: {
-              select: {
-                name: true,
-                avatar: true
-              }
-            }
-          }
-        }
-      }
+      include: { user: true },
     });
 
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
+    if (!listing) return res.status(404).json({ message: "Listing not found" });
     res.json(listing);
   } catch (error) {
     next(error);
@@ -133,22 +87,19 @@ export const getListingById = async (req: Request, res: Response, next: NextFunc
 
 export const createListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = createListingSchema.safeParse(req.body);
-
-    if (!result.success) {
-      return res.status(400).json({ errors: result.error.errors });
+    const { title, description, location, pricePerNight, guests, type, amenities, userId } = req.body;
+    if (!title || !description || !location || !pricePerNight || !guests || !type || !userId) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const host = await prisma.user.findUnique({ where: { id: result.data.hostId } });
-
-    if (!host) {
-      return res.status(404).json({ message: "Host not found" });
-    }
+    const user = await prisma.user.findUnique({ where: { id: Number(userId) } });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const listing = await prisma.listing.create({
-      data: result.data
+      data: { title, description, location, pricePerNight: Number(pricePerNight), guests: Number(guests), type, amenities: amenities || [], userId: Number(userId) },
     });
 
+    deleteCache("listings:stats");
     res.status(201).json(listing);
   } catch (error) {
     next(error);
@@ -158,57 +109,14 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
 export const updateListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseId(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid listing id" });
-    }
+    if (id === null) return res.status(400).json({ message: "Invalid listing id" });
 
     const existing = await prisma.listing.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ message: "Listing not found" });
 
-    if (!existing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    const result = updateListingSchema.safeParse(req.body);
-
-    if (!result.success) {
-      return res.status(400).json({ errors: result.error.errors });
-    }
-
-    if (result.data.hostId !== undefined) {
-      const host = await prisma.user.findUnique({ where: { id: result.data.hostId } });
-
-      if (!host) {
-        return res.status(404).json({ message: "Host not found" });
-      }
-    }
-
-    const updatedListing = await prisma.listing.update({
-      where: { id },
-      data: result.data
-    });
-
-    res.json(updatedListing);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getListingStats = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const stats = await prisma.$queryRaw`
-      SELECT
-        location,
-        COUNT(*)::int AS total,
-        ROUND(AVG("pricePerNight")::numeric, 2) AS avg_price,
-        MIN("pricePerNight") AS min_price,
-        MAX("pricePerNight") AS max_price
-      FROM "Listing"
-      GROUP BY location
-      ORDER BY total DESC
-    `;
-
-    res.json(stats);
+    const listing = await prisma.listing.update({ where: { id }, data: req.body });
+    deleteCache("listings:stats");
+    res.json(listing);
   } catch (error) {
     next(error);
   }
@@ -217,19 +125,14 @@ export const getListingStats = async (req: Request, res: Response, next: NextFun
 export const deleteListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseId(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid listing id" });
-    }
+    if (id === null) return res.status(400).json({ message: "Invalid listing id" });
 
     const listing = await prisma.listing.findUnique({ where: { id } });
-
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
+    if (!listing) return res.status(404).json({ message: "Listing not found" });
 
     await prisma.listing.delete({ where: { id } });
-    res.status(204).send();
+    deleteCache("listings:stats");
+    res.status(200).json({ message: "Listing deleted" });
   } catch (error) {
     next(error);
   }

@@ -1,27 +1,29 @@
-import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
-import { createUserSchema, updateUserSchema } from "../validators/users.validator.js";
 
-const getIdFromParam = (value: string | string[] | undefined): number | null => {
-  const idString = Array.isArray(value) ? value[0] : value;
-  const id = Number(idString);
-  return !idString || Number.isNaN(id) ? null : id;
+const parseId = (v: string | string[] | undefined): number | null => {
+  const s = Array.isArray(v) ? v[0] : v;
+  const n = Number(s);
+  return !s || Number.isNaN(n) ? null : n;
+};
+
+const parsePage = (page: unknown, limit: unknown) => {
+  const p = Math.max(1, parseInt(String(page || "1"), 10) || 1);
+  const l = Math.max(1, parseInt(String(limit || "10"), 10) || 10);
+  return { page: p, limit: l, skip: (p - 1) * l };
 };
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const users = await prisma.user.findMany({
-      include: {
-        _count: {
-          select: {
-            listings: true
-          }
-        }
-      }
-    });
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
 
-    res.json(users);
+    const [data, total] = await Promise.all([
+      prisma.user.findMany({ skip, take: l, select: { id: true, name: true, email: true, username: true, role: true, avatar: true, createdAt: true } }),
+      prisma.user.count(),
+    ]);
+
+    res.json({ data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } });
   } catch (error) {
     next(error);
   }
@@ -29,62 +31,16 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 
 export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = getIdFromParam(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid user id" });
-    }
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
 
     const user = await prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        username: true,
-        phone: true,
-        role: true,
-        avatar: true,
-        bio: true,
-        createdAt: true,
-        profile: true
-      }
+      select: { id: true, name: true, email: true, username: true, phone: true, role: true, avatar: true, bio: true, createdAt: true },
     });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.role === "HOST") {
-      const listings = await prisma.listing.findMany({
-        where: { hostId: id },
-        include: {
-          _count: {
-            select: {
-              bookings: true
-            }
-          }
-        }
-      });
-
-      return res.json({ ...user, listings });
-    }
-
-    const bookings = await prisma.booking.findMany({
-      where: { guestId: id },
-      include: {
-        listing: {
-          select: {
-            id: true,
-            title: true,
-            location: true,
-            pricePerNight: true
-          }
-        }
-      }
-    });
-
-    res.json({ ...user, bookings });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -92,31 +48,12 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = createUserSchema.safeParse(req.body);
-
-    if (!result.success) {
-      return res.status(400).json({ errors: result.error.errors });
+    const { name, email, username, phone, role, avatar, bio } = req.body;
+    if (!name || !email || !username || !phone) {
+      return res.status(400).json({ message: "Missing required fields: name, email, username, phone" });
     }
 
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: result.data.email }, { username: result.data.username }]
-      }
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ message: "Email or username already in use" });
-    }
-
-    const hashedPassword = await bcrypt.hash(result.data.password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        ...result.data,
-        password: hashedPassword
-      }
-    });
-
+    const user = await prisma.user.create({ data: { name, email, username, phone, role, avatar, bio } });
     res.status(201).json(user);
   } catch (error) {
     next(error);
@@ -125,36 +62,14 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = getIdFromParam(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid user id" });
-    }
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
 
     const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const result = updateUserSchema.safeParse(req.body);
-
-    if (!result.success) {
-      return res.status(400).json({ errors: result.error.errors });
-    }
-
-    const data = { ...result.data };
-
-    if (typeof data.password === "string") {
-      data.password = await bcrypt.hash(data.password, 10);
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data
-    });
-
-    res.json(updatedUser);
+    const updated = await prisma.user.update({ where: { id }, data: req.body });
+    res.json(updated);
   } catch (error) {
     next(error);
   }
@@ -162,51 +77,14 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
 export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = getIdFromParam(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid user id" });
-    }
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
 
     const user = await prisma.user.findUnique({ where: { id } });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     await prisma.user.delete({ where: { id } });
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getUserListings = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const id = getIdFromParam(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid user id" });
-    }
-
-    const user = await prisma.user.findUnique({ where: { id } });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const listings = await prisma.listing.findMany({
-      where: { hostId: id },
-      include: {
-        _count: {
-          select: {
-            bookings: true
-          }
-        }
-      }
-    });
-
-    res.json(listings);
+    res.status(200).json({ message: "User deleted" });
   } catch (error) {
     next(error);
   }
@@ -214,33 +92,26 @@ export const getUserListings = async (req: Request, res: Response, next: NextFun
 
 export const getUserBookings = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = getIdFromParam(req.params.id);
-
-    if (id === null) {
-      return res.status(400).json({ message: "Invalid user id" });
-    }
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
 
     const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
 
-    const bookings = await prisma.booking.findMany({
-      where: { guestId: id },
-      include: {
-        listing: {
-          select: {
-            id: true,
-            title: true,
-            location: true,
-            pricePerNight: true
-          }
-        }
-      }
-    });
+    const [data, total] = await Promise.all([
+      prisma.booking.findMany({
+        where: { userId: id },
+        skip,
+        take: l,
+        include: { listing: { select: { title: true, location: true } } },
+      }),
+      prisma.booking.count({ where: { userId: id } }),
+    ]);
 
-    res.json(bookings);
+    res.json({ data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } });
   } catch (error) {
     next(error);
   }

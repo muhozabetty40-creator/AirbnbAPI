@@ -30,7 +30,7 @@
     "exactOptionalPropertyTypes": true,
 
     "strict": true,
-    "jsx": "react-jsx",
+    "jsx": "react-jsx",3
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
