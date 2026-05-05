@@ -4,22 +4,24 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  username  String   @unique
-  phone     String
-  password  String?
-  role      Role     @default(GUEST)
-  createdAt DateTime @default(now())
+  id               Int       @id @default(autoincrement())
+  name             String
+  email            String    @unique
+  username         String    @unique
+  phone            String
+  password         String
+  role             Role      @default(GUEST)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   resetToken       String?
   resetTokenExpiry DateTime?
 
-  listings  Listing[]
-  bookings  Booking[]
+  listings         Listing[]
+  bookings         Booking[]
 }
 
 model Listing {

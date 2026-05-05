@@ -91,14 +91,21 @@
  */
 
 import express from 'express';
-import { createBooking, deleteBooking, getAllBookings, getBookingById, updateBooking } from '../controllers/booking.controller.js';
+import {
+  createBooking,
+  deleteBooking,
+  getAllBookings,
+  getBookingById,
+  updateBooking,
+} from '../controllers/booking.controller.js';
+import { authenticate, requireGuest } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 router.get('/', getAllBookings);
 router.get('/:id', getBookingById);
-router.post('/', createBooking);
-router.delete('/:id', deleteBooking);
-router.put('/:id',updateBooking);
+router.post('/', authenticate, requireGuest, createBooking);
+router.delete('/:id', authenticate, deleteBooking);
+router.put('/:id', authenticate, updateBooking);
 
 export default router;

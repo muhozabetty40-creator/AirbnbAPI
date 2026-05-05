@@ -1,16 +1,11 @@
 import "dotenv/config";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { defineConfig } from "prisma/config";
 
-const client = new pg.Pool({
-  connectionString: process.env.DATABASE_URL ?? ""
-});
-
-export const prismaConfig = {
-  datasources: {
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  datasource: {
     db: {
       url: process.env.DATABASE_URL ?? ""
     }
-  },
-  adapter: new PrismaPg(client)
-} as any;
+  }
+});

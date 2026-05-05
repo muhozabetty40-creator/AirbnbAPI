@@ -4,11 +4,13 @@ import {
   deleteListing,
   getAllListings,
   getListingById,
+  getListingStats,
   updateListing
 } from "../controllers/listings.controller.js";
 
 const router = Router();
 
+router.get("/stats", getListingStats);
 router.get("/", getAllListings);
 router.get("/:id", getListingById);
 router.post("/", createListing);

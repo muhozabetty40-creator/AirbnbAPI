@@ -109,14 +109,13 @@
  */
 import express from "express";
 import { createListing, deleteListing, getAllListings, getListingById, updateListing } from "../controllers/listings.controller.js";
-import { authenticate } from "../middleware/auth.middleware.js";
+import { authenticate, requireHost } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-
-router.get('/',getAllListings);
+router.get('/', getAllListings);
 router.get('/:id', getListingById);
-router.post('/', authenticate, createListing);
+router.post('/', authenticate, requireHost, createListing);
 router.put('/:id', authenticate, updateListing);
 router.delete('/:id', authenticate, deleteListing);
 

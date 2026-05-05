@@ -168,8 +168,15 @@
 
 
 import express from "express";
-import { register, login, changePassword, resetPassword, forgotPassword } from "../controllers/auth.controller.js";
-import { authenticate, authorize } from "../middleware/auth.middleware.js";
+import {
+  register,
+  login,
+  getMe,
+  changePassword,
+  resetPassword,
+  forgotPassword,
+} from "../controllers/auth.controller.js";
+import { authenticate, requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -177,7 +184,14 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post("/reset-password/:token", resetPassword);
+router.get("/me", authenticate, getMe);
+router.post("/change-password", authenticate, changePassword);
+router.get("/admin", authenticate, requireAdmin, (req, res) => {
+  res.json({ message: "Admin access granted" });
+});
+
+export default router;
 
 // 🔐 Protected route (any logged-in user)
 router.post("/change-password", authenticate, changePassword);

@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
 import { createUserSchema, updateUserSchema } from "../validators/users.validator.js";
@@ -107,8 +108,13 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       return res.status(409).json({ message: "Email or username already in use" });
     }
 
+    const hashedPassword = await bcrypt.hash(result.data.password, 10);
+
     const user = await prisma.user.create({
-      data: result.data
+      data: {
+        ...result.data,
+        password: hashedPassword
+      }
     });
 
     res.status(201).json(user);
@@ -137,9 +143,15 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
       return res.status(400).json({ errors: result.error.errors });
     }
 
+    const data = { ...result.data };
+
+    if (typeof data.password === "string") {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: result.data
+      data
     });
 
     res.json(updatedUser);

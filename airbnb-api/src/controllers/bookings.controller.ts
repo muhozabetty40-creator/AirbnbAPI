@@ -95,44 +95,51 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    const overlap = await prisma.booking.findFirst({
-      where: {
-        listingId,
-        AND: [
-          {
-            checkIn: {
-              lt: checkOutDate
-            }
-          },
-          {
-            checkOut: {
-              gt: checkInDate
-            }
-          }
-        ]
-      }
-    });
-
-    if (overlap) {
-      return res.status(409).json({ message: "Booking dates overlap an existing booking" });
-    }
-
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / MILLISECONDS_PER_DAY);
     const totalPrice = nights * listing.pricePerNight;
 
-    const booking = await prisma.booking.create({
-      data: {
-        guestId,
-        listingId,
-        checkIn: checkInDate,
-        checkOut: checkOutDate,
-        totalPrice,
-        status: "PENDING"
+    const booking = await prisma.$transaction(async (tx) => {
+      const conflict = await tx.booking.findFirst({
+        where: {
+          listingId,
+          status: "CONFIRMED",
+          AND: [
+            {
+              checkIn: {
+                lt: checkOutDate
+              }
+            },
+            {
+              checkOut: {
+                gt: checkInDate
+              }
+            }
+          ]
+        }
+      });
+
+      if (conflict) {
+        throw new Error("BOOKING_CONFLICT");
       }
+
+      return tx.booking.create({
+        data: {
+          guestId,
+          listingId,
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          totalPrice,
+          status: "PENDING"
+        }
+      });
     });
 
     res.status(201).json(booking);
   } catch (error) {
+    if (error instanceof Error && error.message === "BOOKING_CONFLICT") {
+      return res.status(409).json({ message: "Booking dates overlap an existing confirmed booking" });
+    }
+
     next(error);
   }
 };

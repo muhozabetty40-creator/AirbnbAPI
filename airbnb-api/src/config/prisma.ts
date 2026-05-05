@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { prismaConfig } from "../../prisma.config.ts";
 
-const prisma = new PrismaClient(prismaConfig);
+const prisma = new PrismaClient();
 
 export const connectDB = async () => {
   await prisma.$connect();
