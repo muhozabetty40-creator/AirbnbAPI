@@ -35,6 +35,7 @@ model User {
   avatar    String?
   bio       String?
   createdAt DateTime  @default(now())
+  profile   Profile?
   listings  Listing[]
   bookings  Booking[]
 }
@@ -54,9 +55,19 @@ model Listing {
   host          User         @relation(fields: [hostId], references: [id], onDelete: Cascade)
   hostId        Int
   bookings      Booking[]
+  photos        ListingPhoto[]
 
   @@index([location])
   @@index([pricePerNight])
+}
+
+model Profile {
+  id      Int    @id @default(autoincrement())
+  bio     String?
+  website String?
+  country String?
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  Int    @unique
 }
 
 model Booking {
@@ -70,4 +81,11 @@ model Booking {
   guestId    Int
   listing    Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
   listingId  Int
+}
+
+model ListingPhoto {
+  id        Int     @id @default(autoincrement())
+  url       String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId Int
 }

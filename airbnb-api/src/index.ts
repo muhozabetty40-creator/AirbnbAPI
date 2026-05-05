@@ -4,7 +4,7 @@ import usersRouter from "./routes/users.routes.js";
 import listingsRouter from "./routes/listings.routes.js";
 import bookingsRouter from "./routes/bookings.routes.js";
 import { connectDB } from "./config/prisma.js";
-import { errorHandler } from "./middleware/error.middleware.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;

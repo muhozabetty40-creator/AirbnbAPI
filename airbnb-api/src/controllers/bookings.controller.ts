@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
+import { createBookingSchema } from "../validators/bookings.validator.js";
 
 const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
 
-const parseDate = (value: unknown): Date | null => {
-  const date = new Date(String(value));
-  return Number.isNaN(date.getTime()) ? null : date;
+const parseId = (value: string | string[] | undefined): number | null => {
+  const idString = Array.isArray(value) ? value[0] : value;
+  const id = Number(idString);
+  return !idString || Number.isNaN(id) ? null : id;
 };
 
 export const getAllBookings = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,7 +17,8 @@ export const getAllBookings = async (req: Request, res: Response, next: NextFunc
         guest: {
           select: {
             id: true,
-            name: true
+            name: true,
+            avatar: true
           }
         },
         listing: {
@@ -35,9 +38,9 @@ export const getAllBookings = async (req: Request, res: Response, next: NextFunc
 
 export const getBookingById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
+    if (id === null) {
       return res.status(400).json({ message: "Invalid booking id" });
     }
 
@@ -45,7 +48,17 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
       where: { id },
       include: {
         guest: true,
-        listing: true
+        listing: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            }
+          }
+        }
       }
     });
 
@@ -61,21 +74,18 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
 
 export const createBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { guestId, listingId, checkIn, checkOut } = req.body;
+    const result = createBookingSchema.safeParse(req.body);
 
-    if (!guestId || !listingId || !checkIn || !checkOut) {
-      return res.status(400).json({ message: "Missing required booking fields" });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
     }
 
-    const checkInDate = parseDate(checkIn);
-    const checkOutDate = parseDate(checkOut);
+    const { guestId, listingId, checkIn, checkOut } = result.data;
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
 
-    if (!checkInDate || !checkOutDate || checkOutDate <= checkInDate) {
-      return res.status(400).json({ message: "Invalid check-in or check-out dates" });
-    }
-
-    const guest = await prisma.user.findUnique({ where: { id: Number(guestId) } });
-    const listing = await prisma.listing.findUnique({ where: { id: Number(listingId) } });
+    const guest = await prisma.user.findUnique({ where: { id: guestId } });
+    const listing = await prisma.listing.findUnique({ where: { id: listingId } });
 
     if (!guest) {
       return res.status(404).json({ message: "Guest not found" });
@@ -85,18 +95,35 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / MILLISECONDS_PER_DAY);
+    const overlap = await prisma.booking.findFirst({
+      where: {
+        listingId,
+        AND: [
+          {
+            checkIn: {
+              lt: checkOutDate
+            }
+          },
+          {
+            checkOut: {
+              gt: checkInDate
+            }
+          }
+        ]
+      }
+    });
 
-    if (nights < 1) {
-      return res.status(400).json({ message: "Booking must be at least one night" });
+    if (overlap) {
+      return res.status(409).json({ message: "Booking dates overlap an existing booking" });
     }
 
+    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / MILLISECONDS_PER_DAY);
     const totalPrice = nights * listing.pricePerNight;
 
     const booking = await prisma.booking.create({
       data: {
-        guestId: Number(guestId),
-        listingId: Number(listingId),
+        guestId,
+        listingId,
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalPrice,
@@ -112,9 +139,9 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
 
 export const deleteBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
+    if (id === null) {
       return res.status(400).json({ message: "Invalid booking id" });
     }
 
@@ -133,10 +160,10 @@ export const deleteBooking = async (req: Request, res: Response, next: NextFunct
 
 export const updateBookingStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
     const { status } = req.body;
 
-    if (Number.isNaN(id)) {
+    if (id === null) {
       return res.status(400).json({ message: "Invalid booking id" });
     }
 

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
+import { createListingSchema, updateListingSchema } from "../validators/listings.validator.js";
 
 const listingTypes = new Set(["APARTMENT", "HOUSE", "VILLA", "CABIN"]);
 const sortFields = new Set(["pricePerNight", "createdAt"]);
@@ -69,7 +70,7 @@ export const getAllListings = async (req: Request, res: Response, next: NextFunc
       take: limitNumber,
       orderBy: {
         [sortField]: sortOrder
-      },
+      } as any,
       select: {
         id: true,
         title: true,
@@ -79,6 +80,11 @@ export const getAllListings = async (req: Request, res: Response, next: NextFunc
           select: {
             name: true,
             avatar: true
+          }
+        },
+        _count: {
+          select: {
+            bookings: true
           }
         }
       }
@@ -102,7 +108,16 @@ export const getListingById = async (req: Request, res: Response, next: NextFunc
       where: { id },
       include: {
         host: true,
-        bookings: true
+        bookings: {
+          include: {
+            guest: {
+              select: {
+                name: true,
+                avatar: true
+              }
+            }
+          }
+        }
       }
     });
 
@@ -118,59 +133,20 @@ export const getListingById = async (req: Request, res: Response, next: NextFunc
 
 export const createListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {
-      title,
-      description,
-      location,
-      pricePerNight,
-      guests,
-      type,
-      amenities,
-      rating,
-      hostId
-    } = req.body;
+    const result = createListingSchema.safeParse(req.body);
 
-    if (
-      !title ||
-      !description ||
-      !location ||
-      pricePerNight === undefined ||
-      guests === undefined ||
-      !type ||
-      !amenities ||
-      hostId === undefined
-    ) {
-      return res.status(400).json({ message: "Missing required listing fields" });
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
     }
 
-    if (!Array.isArray(amenities)) {
-      return res.status(400).json({ message: "Amenities must be an array" });
-    }
-
-    const normalizedType = String(type).trim().toUpperCase();
-
-    if (!listingTypes.has(normalizedType)) {
-      return res.status(400).json({ message: "Invalid listing type" });
-    }
-
-    const host = await prisma.user.findUnique({ where: { id: Number(hostId) } });
+    const host = await prisma.user.findUnique({ where: { id: result.data.hostId } });
 
     if (!host) {
       return res.status(404).json({ message: "Host not found" });
     }
 
     const listing = await prisma.listing.create({
-      data: {
-        title,
-        description,
-        location,
-        pricePerNight: Number(pricePerNight),
-        guests: Number(guests),
-        type: normalizedType as any,
-        amenities,
-        rating: rating === undefined ? undefined : Number(rating),
-        hostId: Number(hostId)
-      }
+      data: result.data
     });
 
     res.status(201).json(listing);
@@ -193,41 +169,23 @@ export const updateListing = async (req: Request, res: Response, next: NextFunct
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    const data: Record<string, unknown> = { ...req.body };
+    const result = updateListingSchema.safeParse(req.body);
 
-    if (data.type) {
-      const normalizedType = String(data.type).trim().toUpperCase();
-
-      if (!listingTypes.has(normalizedType)) {
-        return res.status(400).json({ message: "Invalid listing type" });
-      }
-
-      data.type = normalizedType;
+    if (!result.success) {
+      return res.status(400).json({ errors: result.error.errors });
     }
 
-    if (data.hostId !== undefined) {
-      const host = await prisma.user.findUnique({ where: { id: Number(data.hostId) } });
+    if (result.data.hostId !== undefined) {
+      const host = await prisma.user.findUnique({ where: { id: result.data.hostId } });
 
       if (!host) {
         return res.status(404).json({ message: "Host not found" });
       }
     }
 
-    if (data.pricePerNight !== undefined) {
-      data.pricePerNight = Number(data.pricePerNight);
-    }
-
-    if (data.guests !== undefined) {
-      data.guests = Number(data.guests);
-    }
-
-    if (data.rating !== undefined) {
-      data.rating = Number(data.rating);
-    }
-
     const updatedListing = await prisma.listing.update({
       where: { id },
-      data
+      data: result.data
     });
 
     res.json(updatedListing);
