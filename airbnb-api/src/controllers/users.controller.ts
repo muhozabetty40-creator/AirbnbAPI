@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
 
-const parseId = (v: string | string[] | undefined): number | null => {
+const parseId = (v: string | string[] | undefined): string | null => {
   const s = Array.isArray(v) ? v[0] : v;
-  const n = Number(s);
-  return !s || Number.isNaN(n) ? null : n;
+  return s || null;
 };
 
 const parsePage = (page: unknown, limit: unknown) => {

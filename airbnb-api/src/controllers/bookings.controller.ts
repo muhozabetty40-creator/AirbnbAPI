@@ -3,10 +3,9 @@ import prisma from "../config/prisma.js";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-const parseId = (v: string | string[] | undefined): number | null => {
+const parseId = (v: string | string[] | undefined): string | null => {
   const s = Array.isArray(v) ? v[0] : v;
-  const n = Number(s);
-  return !s || Number.isNaN(n) ? null : n;
+  return s || null;
 };
 
 const parsePage = (page: unknown, limit: unknown) => {
@@ -64,8 +63,8 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     }
 
     const [user, listing] = await Promise.all([
-      prisma.user.findUnique({ where: { id: Number(userId) } }),
-      prisma.listing.findUnique({ where: { id: Number(listingId) } }),
+      prisma.user.findUnique({ where: { id: userId } }),
+      prisma.listing.findUnique({ where: { id: listingId } }),
     ]);
 
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -78,8 +77,8 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
 
     const booking = await prisma.booking.create({
       data: {
-        userId: Number(userId),
-        listingId: Number(listingId),
+        userId,
+        listingId,
         checkIn: checkInDate,
         checkOut: checkOutDate,
         guests: Number(guests),

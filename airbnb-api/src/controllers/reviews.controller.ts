@@ -2,10 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
 import { getCache, setCache, deleteCache } from "../config/cache.js";
 
-const parseId = (v: string | string[] | undefined): number | null => {
+const parseId = (v: string | string[] | undefined): string | null => {
   const s = Array.isArray(v) ? v[0] : v;
-  const n = Number(s);
-  return !s || Number.isNaN(n) ? null : n;
+  return s || null;
 };
 
 const parsePage = (page: unknown, limit: unknown) => {
@@ -62,7 +61,7 @@ export const createReview = async (req: Request, res: Response, next: NextFuncti
     if (!listing) return res.status(404).json({ message: "Listing not found" });
 
     const review = await prisma.review.create({
-      data: { userId: Number(userId), listingId, rating: Number(rating), comment },
+      data: { userId, listingId, rating: Number(rating), comment },
     });
 
     deleteCache(`reviews:listing:${listingId}:1:10`);

@@ -2,10 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
 import { getCache, setCache, deleteCache } from "../config/cache.js";
 
-const parseId = (v: string | string[] | undefined): number | null => {
+const parseId = (v: string | string[] | undefined): string | null => {
   const s = Array.isArray(v) ? v[0] : v;
-  const n = Number(s);
-  return !s || Number.isNaN(n) ? null : n;
+  return s || null;
 };
 
 const parsePage = (page: unknown, limit: unknown) => {
@@ -92,11 +91,11 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: Number(userId) } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const listing = await prisma.listing.create({
-      data: { title, description, location, pricePerNight: Number(pricePerNight), guests: Number(guests), type, amenities: amenities || [], userId: Number(userId) },
+      data: { title, description, location, pricePerNight: Number(pricePerNight), guests: Number(guests), type, amenities: amenities || [], userId },
     });
 
     deleteCache("listings:stats");
