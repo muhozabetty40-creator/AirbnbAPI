@@ -1,21 +1,30 @@
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
-// Simple authentication middleware for testing
-// In production, this would verify JWT tokens
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
+
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Authorization required" });
   }
 
-  // For now, just extract the token and attach a mock user
-  // In production, verify the JWT and extract the user ID
   const token = authHeader.slice(7);
-  
-  // Mock: decode the token or validate it
-  // For testing, we'll assume the token contains the user ID
-  req.userId = token.split("-")[0] || "user-123";
-  
-  next();
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
 };

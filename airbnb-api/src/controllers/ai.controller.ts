@@ -3,8 +3,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { JsonOutputParser, StringOutputParser } from "@langchain/core/output_parsers";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { deterministicModel, creativeModel } from "../../config/ai.js";
-import prisma from "../../config/prisma.js";
+import { deterministicModel, creativeModel } from "../config/ai.js";
+import prisma from "../config/prisma.js";
 
 // Extend Express Request to include userId
 declare global {

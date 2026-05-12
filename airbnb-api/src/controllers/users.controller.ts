@@ -1,5 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../config/prisma.js";
+import cloudinary from "../config/cloudinary.js";
+
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
 
 const parseId = (v: string | string[] | undefined): string | null => {
   const s = Array.isArray(v) ? v[0] : v;
@@ -41,6 +50,89 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { id: true, name: true, email: true, username: true, phone: true, role: true, avatar: true, bio: true, createdAt: true },
+    });
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { name, username, phone, bio, avatar } = req.body;
+
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        ...(name && { name }),
+        ...(username && { username }),
+        ...(phone && { phone }),
+        ...(bio !== undefined && { bio }),
+        ...(avatar !== undefined && { avatar }),
+      },
+      select: { id: true, name: true, email: true, username: true, phone: true, role: true, avatar: true, bio: true, createdAt: true },
+    });
+
+    res.json({ message: "Profile updated successfully", user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadAvatar = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file provided" });
+    }
+
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "airbnb/avatars",
+          resource_type: "auto",
+          public_id: `avatar_${req.userId}_${Date.now()}`,
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      uploadStream.end(req.file!.buffer);
+    });
+
+    const uploadResult = result as any;
+
+    res.json({
+      message: "Avatar uploaded successfully",
+      url: uploadResult.secure_url,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
     next(error);
   }
 };

@@ -1,14 +1,9 @@
 import { Router } from "express";
+import { login, register } from "../../controllers/auth.controller.js";
 
 const router = Router();
 
-// Placeholder auth routes - implement as needed
-router.post("/register", (req, res) => {
-  res.status(501).json({ message: "Not implemented" });
-});
-
-router.post("/login", (req, res) => {
-  res.status(501).json({ message: "Not implemented" });
-});
+router.post("/register", register);
+router.post("/login", login);
 
 export default router;
