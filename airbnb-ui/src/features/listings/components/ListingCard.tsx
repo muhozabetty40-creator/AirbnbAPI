@@ -16,6 +16,9 @@ const ListingCard = memo(function ListingCard({ listing }: Props) {
   const { toggle, isSaved } = useFavorites()
   const saved = isSaved(listing.id)
 
+  // Use image field from database, fallback to img for backward compatibility
+  const imageUrl = (listing as any).image || (listing as any).img || 'https://via.placeholder.com/280x200?text=No+Image'
+
   return (
     <motion.div
       className={clsx(styles.card, { [styles.cardSuperhost]: listing.superhost })}
@@ -24,7 +27,7 @@ const ListingCard = memo(function ListingCard({ listing }: Props) {
       transition={{ duration: 0.35 }}
     >
       <Link to={`/listings/${listing.id}`} className={styles.imageWrap}>
-        <img src={listing.img} alt={listing.title} className={styles.image} />
+        <img src={imageUrl} alt={listing.title} className={styles.image} />
         {listing.superhost && <span className={clsx(styles.badge, styles.badgeSuperhost)}>Superhost</span>}
         {listing.price > 300 && <span className={clsx(styles.badge, styles.badgeLuxury)}>Luxury</span>}
       </Link>

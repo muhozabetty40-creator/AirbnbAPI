@@ -2,6 +2,7 @@ export interface AuthState {
   isAuthenticated: boolean
   email: string | null
   userId: string | null
+  role: string | null
   loading: boolean
   error: string | null
 }

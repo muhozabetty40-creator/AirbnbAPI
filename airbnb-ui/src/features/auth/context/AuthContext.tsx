@@ -8,6 +8,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [email, setEmail] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [role, setRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true)
       setEmail(user.email)
       setUserId(user.id)
+      setRole(user.role)
     }
     
     setLoading(false)
@@ -42,7 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true)
       setEmail(response.user.email)
       setUserId(response.user.id)
-      console.log("State updated, login complete")
+      setRole(response.user.role)
+      console.log("State updated, login complete. Role:", response.user.role)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed'
       console.error("Login error:", errorMessage)
@@ -74,6 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true)
       setEmail(response.user.email)
       setUserId(response.user.id)
+      setRole(response.user.role)
+      console.log("Registration complete. Role:", response.user.role)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed'
       setError(errorMessage)
@@ -88,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
     setEmail(null)
     setUserId(null)
+    setRole(null)
     setError(null)
   }
 
@@ -97,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated, 
         email, 
         userId,
+        role,
         loading,
         error,
         login, 

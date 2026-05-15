@@ -47,7 +47,7 @@ body {
   text-decoration: none;
 }
 
-.brand-logo  { color: #111827; }
+.brand-logo  { color: #1a1a1a; }
 .brand-highlight { color: #ff5724; }
 
 /* ── Nav ────────────────────────────────────────────────── */
@@ -61,14 +61,14 @@ body {
 
 .site-nav a {
   text-decoration: none;
-  color: #4b5563;
+  color: #1a1a1a;
   font-weight: 500;
   font-size: 14px;
   white-space: nowrap;
   transition: color 0.2s;
 }
 
-.site-nav a:hover { color: #111827; }
+.site-nav a:hover { color: #1a1a1a; }
 
 /* ── Actions ────────────────────────────────────────────── */
 .top-actions {
@@ -81,7 +81,7 @@ body {
 .icon-button {
   border: 1px solid #e5e7eb;
   background: #fff;
-  color: #374151;
+  color: #1a1a1a;
   padding: 7px 10px;
   border-radius: 10px;
   cursor: pointer;
@@ -105,8 +105,8 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #ffedd5;
-  color: #b45309;
+  background: #ffe0cc;
+  color: #ff5724;
   font-size: 10px;
   font-weight: 700;
 }
@@ -226,7 +226,7 @@ body {
   gap: 6px;
   font-size: 14px;
   font-weight: 700;
-  color: #111827;
+  color: #1a1a1a;
 }
 
 .fav-panel__close {
@@ -287,7 +287,7 @@ body {
 .fav-item__title {
   font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: #1a1a1a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -304,7 +304,7 @@ body {
 .fav-item__price {
   font-size: 12px;
   font-weight: 600;
-  color: #374151;
+  color: #1a1a1a;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -384,7 +384,7 @@ body {
 .login-form__title {
   font-size: 22px;
   font-weight: 700;
-  color: #111827;
+  color: #1a1a1a;
   margin: 0;
 }
 
@@ -397,7 +397,7 @@ body {
 .login-form__field label {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #1a1a1a;
 }
 
 .login-form__field input {
@@ -446,7 +446,7 @@ body {
   gap: 20px;
 }
 
-.dashboard-card__title { font-size: 24px; font-weight: 700; color: #111827; margin: 0; }
+.dashboard-card__title { font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0; }
 .dashboard-card__email { font-size: 14px; color: #6b7280; margin: 0; }
 
 .dashboard-card__stat {
@@ -458,7 +458,7 @@ body {
   padding: 14px 18px;
 }
 
-.dashboard-card__stat-label { font-size: 14px; color: #374151; font-weight: 500; }
+.dashboard-card__stat-label { font-size: 14px; color: #1a1a1a; font-weight: 500; }
 .dashboard-card__stat-value { font-size: 24px; font-weight: 700; color: #ff5724; }
 
 .dashboard-card__actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -476,7 +476,7 @@ body {
 .dashboard-card__btn--outline {
   background: #fff;
   border: 1px solid #e5e7eb;
-  color: #374151;
+  color: #1a1a1a;
 }
 .dashboard-card__btn--outline:hover { background: #f3f4f6; }
 
@@ -504,7 +504,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #374151;
+  color: #1a1a1a;
   margin-bottom: 24px;
   transition: background 0.2s;
 }
@@ -532,7 +532,7 @@ body {
 .detail-card__body { padding: 28px 32px; display: flex; flex-direction: column; gap: 12px; }
 
 .detail-card__header { display: flex; justify-content: space-between; align-items: flex-start; }
-.detail-card__title { font-size: 26px; font-weight: 700; color: #111827; margin: 0; }
+.detail-card__title { font-size: 26px; font-weight: 700; color: #1a1a1a; margin: 0; }
 
 .detail-card__heart {
   background: none;
@@ -553,15 +553,15 @@ body {
 
 .detail-card__meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.detail-card__rating { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: #111827; }
-.detail-card__category { font-size: 12px; background: #f3f4f6; color: #374151; padding: 3px 10px; border-radius: 20px; font-weight: 500; text-transform: capitalize; }
+.detail-card__rating { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: #1a1a1a; }
+.detail-card__category { font-size: 12px; background: #ffe0cc; color: #ff5724; padding: 3px 10px; border-radius: 20px; font-weight: 500; text-transform: capitalize; }
 
 .detail-card__status { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
 .detail-card__status--available { background: #dcfce7; color: #166534; }
 .detail-card__status--booked { background: #fee2e2; color: #991b1b; }
 
 .detail-card__price { font-size: 20px; color: #6b7280; margin: 0; }
-.detail-card__price strong { color: #111827; font-weight: 700; }
+.detail-card__price strong { color: #1a1a1a; font-weight: 700; }
 .detail-card__date { font-size: 14px; color: #6b7280; }
 
 /* ── 404 ────────────────────────────────────────────────── */

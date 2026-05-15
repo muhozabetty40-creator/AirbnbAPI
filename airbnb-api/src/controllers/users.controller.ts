@@ -207,3 +207,29 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
     next(error);
   }
 };
+
+export const getUserListings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
+
+    const [data, total] = await Promise.all([
+      prisma.listing.findMany({
+        where: { userId: id },
+        skip,
+        take: l,
+      }),
+      prisma.listing.count({ where: { userId: id } }),
+    ]);
+
+    res.json({ data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } });
+  } catch (error) {
+    next(error);
+  }
+};

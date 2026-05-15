@@ -9,6 +9,7 @@ import {
   updateUser,
   deleteUser,
   getUserBookings,
+  getUserListings,
   getProfile,
   updateProfile,
   uploadAvatar,
@@ -23,6 +24,7 @@ router.put("/profile", authenticate, strictLimiter, updateProfile);
 router.post("/upload-avatar", authenticate, upload.single("file"), uploadAvatar);
 router.get("/", getAllUsers);
 router.get("/:id/bookings", getUserBookings);
+router.get("/:id/listings", getUserListings);
 router.get("/:id", getUserById);
 router.post("/", strictLimiter, createUser);
 router.put("/:id", strictLimiter, updateUser);

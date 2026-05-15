@@ -109,7 +109,7 @@
 
 /* ── Banner ─────────────────────────────────────────────── */
 .db-banner {
-  background: linear-gradient(135deg, #ff5724 0%, #ff8c00 60%, #ffc107 100%);
+  background: #ff5724;
   border-radius: 20px;
   padding: 32px 40px;
   display: flex;
@@ -124,13 +124,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(
-    60deg,
-    transparent,
-    transparent 30px,
-    rgba(255,255,255,0.04) 30px,
-    rgba(255,255,255,0.04) 31px
-  );
+  background-image: none;
 }
 
 .db-banner__content {
@@ -361,7 +355,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff5724, #ff8c00);
+  background: #ff5724;
   color: #fff;
   font-size: 20px;
   font-weight: 700;

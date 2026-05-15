@@ -86,7 +86,7 @@ export const getListingById = async (req: Request, res: Response, next: NextFunc
 
 export const createListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { title, description, location, pricePerNight, guests, type, amenities, userId } = req.body;
+    const { title, description, location, pricePerNight, guests, type, amenities, userId, image, bedrooms, bathrooms } = req.body;
     if (!title || !description || !location || !pricePerNight || !guests || !type || !userId) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -95,7 +95,19 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const listing = await prisma.listing.create({
-      data: { title, description, location, pricePerNight: Number(pricePerNight), guests: Number(guests), type, amenities: amenities || [], userId },
+      data: { 
+        title, 
+        description, 
+        location, 
+        pricePerNight: Number(pricePerNight), 
+        guests: Number(guests), 
+        type, 
+        amenities: amenities || [], 
+        image: image || null,
+        bedrooms: bedrooms ? Number(bedrooms) : null,
+        bathrooms: bathrooms ? Number(bathrooms) : null,
+        userId 
+      },
     });
 
     deleteCache("listings:stats");

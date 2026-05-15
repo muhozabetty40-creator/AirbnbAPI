@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { FaUser, FaEnvelope, FaPhone, FaFileUpload, FaCheck } from 'react-icons/fa'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import { apiService } from '../api'
 
@@ -64,13 +65,11 @@ export default function ProfilePage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file')
       return
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File size must be less than 5MB')
       return
@@ -125,12 +124,16 @@ export default function ProfilePage() {
 
   return (
     <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px' }}>
-      <h1 style={{ marginBottom: '30px', fontSize: '28px', fontWeight: '600' }}>My Profile</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '30px' }}>
+        <FaUser size={28} color="#ff385c" />
+        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '600' }}>My Profile</h1>
+      </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Avatar Upload */}
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+        <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', fontWeight: '500' }}>
+            <FaFileUpload size={16} color="#ff385c" />
             Profile Picture
           </label>
           <div style={{
@@ -148,7 +151,7 @@ export default function ProfilePage() {
                     height: '100px',
                     borderRadius: '50%',
                     objectFit: 'cover',
-                    border: '2px solid #ddd'
+                    border: '3px solid #ff385c'
                   }}
                 />
                 <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>Current</p>
@@ -180,7 +183,8 @@ export default function ProfilePage() {
 
         {/* Name */}
         <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500' }}>
+            <FaUser size={14} color="#ff385c" />
             Full Name
           </label>
           <input
@@ -201,7 +205,8 @@ export default function ProfilePage() {
 
         {/* Username */}
         <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500' }}>
+            <FaUser size={14} color="#ff385c" />
             Username
           </label>
           <input
@@ -222,7 +227,8 @@ export default function ProfilePage() {
 
         {/* Email (Read-only) */}
         <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500' }}>
+            <FaEnvelope size={14} color="#ff385c" />
             Email
           </label>
           <input
@@ -245,7 +251,8 @@ export default function ProfilePage() {
 
         {/* Phone */}
         <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500' }}>
+            <FaPhone size={14} color="#ff385c" />
             Phone Number
           </label>
           <input
@@ -302,10 +309,13 @@ export default function ProfilePage() {
             fontWeight: '600',
             cursor: (saving || uploading) ? 'not-allowed' : 'pointer',
             opacity: (saving || uploading) ? 0.7 : 1,
-            transition: 'opacity 0.2s'
+            transition: 'opacity 0.2s',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          {saving ? 'Saving...' : 'Save Changes'}
+          <FaCheck size={14} /> {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
     </div>

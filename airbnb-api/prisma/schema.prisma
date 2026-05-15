@@ -34,8 +34,11 @@ model Listing {
   location      String
   pricePerNight Float
   guests        Int
+  bedrooms      Int?
+  bathrooms     Int?
   type          String
   amenities     String[]
+  image         String?
   rating        Float?
   userId        String
   user          User      @relation(fields: [userId], references: [id])
