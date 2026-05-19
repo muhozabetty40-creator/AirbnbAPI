@@ -125,7 +125,7 @@ export default function BookingPage() {
           onClick={() => navigate('/')}
           style={{
             padding: '10px 24px',
-            backgroundColor: '#ff385c',
+            backgroundColor: '#ff5724',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
@@ -172,13 +172,13 @@ export default function BookingPage() {
             <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px' }}>{listing.title}</h1>
             <div style={{ display: 'flex', gap: '24px', marginBottom: '24px', fontSize: '16px', color: '#666', flexWrap: 'wrap' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <FaMapMarkerAlt size={14} color="#ff385c" /> {listing.location}
+                <FaMapMarkerAlt size={14} color="#ff5724" /> {listing.location}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <FaHome size={14} color="#ff385c" /> {listing.type}
+                <FaHome size={14} color="#ff5724" /> {listing.type}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <FaUsers size={14} color="#ff385c" /> {listing.guests} guests
+                <FaUsers size={14} color="#ff5724" /> {listing.guests} guests
               </span>
             </div>
           </div>
@@ -212,14 +212,14 @@ export default function BookingPage() {
             <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Property Details</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div style={{ padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <FaHome size={20} color="#ff385c" />
+                <FaHome size={20} color="#ff5724" />
                 <div>
                   <p style={{ fontSize: '14px', color: '#999', marginBottom: '4px' }}>Type</p>
                   <p style={{ fontSize: '16px', fontWeight: '600' }}>{listing.type}</p>
                 </div>
               </div>
               <div style={{ padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <FaUsers size={20} color="#ff385c" />
+                <FaUsers size={20} color="#ff5724" />
                 <div>
                   <p style={{ fontSize: '14px', color: '#999', marginBottom: '4px' }}>Max Guests</p>
                   <p style={{ fontSize: '16px', fontWeight: '600' }}>{listing.guests} people</p>
@@ -227,7 +227,7 @@ export default function BookingPage() {
               </div>
               {listing.bedrooms && (
                 <div style={{ padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <FaBed size={20} color="#ff385c" />
+                  <FaBed size={20} color="#ff5724" />
                   <div>
                     <p style={{ fontSize: '14px', color: '#999', marginBottom: '4px' }}>Bedrooms</p>
                     <p style={{ fontSize: '16px', fontWeight: '600' }}>{listing.bedrooms}</p>
@@ -236,7 +236,7 @@ export default function BookingPage() {
               )}
               {listing.bathrooms && (
                 <div style={{ padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <FaShower size={20} color="#ff385c" />
+                  <FaShower size={20} color="#ff5724" />
                   <div>
                     <p style={{ fontSize: '14px', color: '#999', marginBottom: '4px' }}>Bathrooms</p>
                     <p style={{ fontSize: '16px', fontWeight: '600' }}>{listing.bathrooms}</p>
@@ -253,7 +253,7 @@ export default function BookingPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                 {listing.amenities.map((amenity: string, idx: number) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FaCheck size={14} color="#ff385c" />
+                    <FaCheck size={14} color="#ff5724" />
                     <span style={{ fontSize: '16px' }}>{amenity}</span>
                   </div>
                 ))}
@@ -275,7 +275,7 @@ export default function BookingPage() {
             <div style={{ marginBottom: '24px' }}>
               <p style={{ fontSize: '14px', color: '#999', marginBottom: '4px' }}>Price per night</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaDollarSign size={20} color="#ff385c" />
+                <FaDollarSign size={20} color="#ff5724" />
                 <p style={{ fontSize: '28px', fontWeight: '700', margin: 0 }}>{listing.pricePerNight}</p>
               </div>
             </div>
@@ -284,7 +284,7 @@ export default function BookingPage() {
               {/* Check-in */}
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  <FaCalendarAlt size={12} color="#ff385c" /> Check-in <span style={{ color: '#ff385c' }}>*</span>
+                  <FaCalendarAlt size={12} color="#ff5724" /> Check-in <span style={{ color: '#ff5724' }}>*</span>
                 </label>
                 <input
                   type="date"
@@ -306,7 +306,7 @@ export default function BookingPage() {
               {/* Check-out */}
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  <FaCalendarAlt size={12} color="#ff385c" /> Check-out <span style={{ color: '#ff385c' }}>*</span>
+                  <FaCalendarAlt size={12} color="#ff5724" /> Check-out <span style={{ color: '#ff5724' }}>*</span>
                 </label>
                 <input
                   type="date"
@@ -328,7 +328,7 @@ export default function BookingPage() {
               {/* Guests */}
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  <FaUsers size={12} color="#ff385c" /> Guests <span style={{ color: '#ff385c' }}>*</span>
+                  <FaUsers size={12} color="#ff5724" /> Guests <span style={{ color: '#ff5724' }}>*</span>
                 </label>
                 <select
                   name="guests"
@@ -369,7 +369,7 @@ export default function BookingPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '700' }}>
                     <span>Total</span>
-                    <span style={{ color: '#ff385c' }}>${(total * 1.1).toFixed(2)}</span>
+                    <span style={{ color: '#ff5724' }}>${(total * 1.1).toFixed(2)}</span>
                   </div>
                 </div>
               )}
@@ -380,7 +380,7 @@ export default function BookingPage() {
                 disabled={loading || !formData.checkIn || !formData.checkOut}
                 style={{
                   padding: '14px',
-                  backgroundColor: '#ff385c',
+                  backgroundColor: '#ff5724',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',

@@ -235,8 +235,8 @@
 .search-bar:focus { border-color: #ff5724; }
 
 .saved-badge {
-  background: #ffedd5;
-  color: #b45309;
+  background: #ffe0cc;
+  color: #ff5724;
   font-size: 12px;
   font-weight: 700;
   padding: 4px 10px;

@@ -110,7 +110,7 @@ export default function AddListingPage() {
           onClick={() => navigate('/profile')}
           style={{
             padding: '10px 24px',
-            backgroundColor: '#ff385c',
+            backgroundColor: '#ff5724',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
@@ -133,7 +133,7 @@ export default function AddListingPage() {
         {/* Header */}
         <div style={{ marginBottom: '40px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <FaHome size={28} color="#ff385c" />
+            <FaHome size={28} color="#ff5724" />
             <h1 style={{ fontSize: '32px', fontWeight: '700', margin: 0, color: '#1a1a1a' }}>
               Create a New Listing
             </h1>
@@ -151,7 +151,7 @@ export default function AddListingPage() {
             {/* Image Upload Section */}
             <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid #e0e0e0' }}>
               <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaCamera size={18} color="#ff385c" /> Property Image
+                <FaCamera size={18} color="#ff5724" /> Property Image
               </h2>
               <label
                 style={{
@@ -166,7 +166,7 @@ export default function AddListingPage() {
                 }}
                 onDragOver={(e) => {
                   e.preventDefault()
-                  e.currentTarget.style.borderColor = '#ff385c'
+                  e.currentTarget.style.borderColor = '#ff5724'
                   e.currentTarget.style.backgroundColor = '#fff5f7'
                 }}
                 onDragLeave={(e) => {
@@ -199,7 +199,7 @@ export default function AddListingPage() {
                 ) : (
                   <div>
                     <div style={{ fontSize: '48px', marginBottom: '12px' }}>
-                      <FaCamera size={48} color="#ff385c" />
+                      <FaCamera size={48} color="#ff5724" />
                     </div>
                     <p style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px', color: '#1a1a1a' }}>
                       Upload Property Image
@@ -219,13 +219,13 @@ export default function AddListingPage() {
             {/* Basic Information */}
             <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid #e0e0e0' }}>
               <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaTag size={18} color="#ff385c" /> Basic Information
+                <FaTag size={18} color="#ff5724" /> Basic Information
               </h2>
 
               {/* Title */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                  <FaHome size={14} color="#ff385c" /> Listing Title <span style={{ color: '#ff385c' }}>*</span>
+                  <FaHome size={14} color="#ff5724" /> Listing Title <span style={{ color: '#ff5724' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -248,7 +248,7 @@ export default function AddListingPage() {
               {/* Description */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                  Description <span style={{ color: '#ff385c' }}>*</span>
+                  Description <span style={{ color: '#ff5724' }}>*</span>
                 </label>
                 <textarea
                   name="description"
@@ -272,7 +272,7 @@ export default function AddListingPage() {
               {/* Location */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                  <FaMapMarkerAlt size={14} color="#ff385c" /> Location <span style={{ color: '#ff385c' }}>*</span>
+                  <FaMapMarkerAlt size={14} color="#ff5724" /> Location <span style={{ color: '#ff5724' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -295,7 +295,7 @@ export default function AddListingPage() {
             {/* Property Details */}
             <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid #e0e0e0' }}>
               <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaHome size={18} color="#ff385c" /> Property Details
+                <FaHome size={18} color="#ff5724" /> Property Details
               </h2>
 
               {/* Type and Price */}
@@ -325,7 +325,7 @@ export default function AddListingPage() {
                 </div>
                 <div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                    <FaDollarSign size={14} color="#ff385c" /> Price per Night <span style={{ color: '#ff385c' }}>*</span>
+                    <FaDollarSign size={14} color="#ff5724" /> Price per Night <span style={{ color: '#ff5724' }}>*</span>
                   </label>
                   <input
                     type="number"
@@ -351,7 +351,7 @@ export default function AddListingPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                 <div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                    <FaUsers size={14} color="#ff385c" /> Max Guests <span style={{ color: '#ff385c' }}>*</span>
+                    <FaUsers size={14} color="#ff5724" /> Max Guests <span style={{ color: '#ff5724' }}>*</span>
                   </label>
                   <input
                     type="number"
@@ -372,7 +372,7 @@ export default function AddListingPage() {
                 </div>
                 <div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                    <FaBed size={14} color="#ff385c" /> Bedrooms
+                    <FaBed size={14} color="#ff5724" /> Bedrooms
                   </label>
                   <input
                     type="number"
@@ -393,7 +393,7 @@ export default function AddListingPage() {
                 </div>
                 <div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: '500', fontSize: '14px', color: '#1a1a1a' }}>
-                    <FaShower size={14} color="#ff385c" /> Bathrooms
+                    <FaShower size={14} color="#ff5724" /> Bathrooms
                   </label>
                   <input
                     type="number"
@@ -445,7 +445,7 @@ export default function AddListingPage() {
                 style={{
                   flex: 1,
                   padding: '14px 24px',
-                  backgroundColor: '#ff385c',
+                  backgroundColor: '#ff5724',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -523,7 +523,7 @@ export default function AddListingPage() {
                   <p style={{ fontSize: '12px', color: '#999', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '500' }}>
                     Price per Night
                   </p>
-                  <p style={{ fontSize: '18px', fontWeight: '700', color: '#ff385c' }}>
+                  <p style={{ fontSize: '18px', fontWeight: '700', color: '#ff5724' }}>
                     ${formData.pricePerNight || '0'}
                   </p>
                 </div>
@@ -557,7 +557,7 @@ export default function AddListingPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {formData.amenities.split(',').map((amenity, idx) => (
                         <p key={idx} style={{ fontSize: '13px', color: '#666', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <FaCheck size={12} color="#ff385c" /> {amenity.trim()}
+                          <FaCheck size={12} color="#ff5724" /> {amenity.trim()}
                         </p>
                       ))}
                     </div>
