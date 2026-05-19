@@ -77,7 +77,7 @@ export default function DashboardPage() {
               padding: '12px 16px',
               backgroundColor: 'transparent',
               border: 'none',
-              color: '#ff385c',
+              color: '#ff5724',
               fontSize: '14px',
               cursor: 'pointer',
               display: 'flex',
