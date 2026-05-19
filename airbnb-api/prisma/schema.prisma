@@ -9,19 +9,22 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  username  String    @unique
-  password  String?
-  phone     String
-  role      String    @default("guest")
-  avatar    String?
-  bio       String?
-  listings  Listing[]
-  bookings  Booking[]
-  reviews   Review[]
-  createdAt DateTime  @default(now())
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  username      String         @unique
+  password      String?
+  phone         String
+  role          String         @default("guest")
+  avatar        String?
+  bio           String?
+  listings      Listing[]
+  bookings      Booking[]
+  reviews       Review[]
+  sentMessages  Message[]      @relation("sender")
+  receivedMessages Message[]   @relation("receiver")
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
 
   @@index([name])
   @@index([role])
@@ -53,17 +56,19 @@ model Listing {
 }
 
 model Booking {
-  id        String   @id @default(uuid())
+  id        String         @id @default(uuid())
   userId    String
   listingId String
   checkIn   DateTime
   checkOut  DateTime
   guests    Int
   total     Float
-  status    String   @default("confirmed")
-  user      User     @relation(fields: [userId], references: [id])
-  listing   Listing  @relation(fields: [listingId], references: [id])
-  createdAt DateTime @default(now())
+  status    String         @default("pending")
+  approvedAt DateTime?
+  cancelledAt DateTime?
+  user      User           @relation(fields: [userId], references: [id])
+  listing   Listing        @relation(fields: [listingId], references: [id])
+  createdAt DateTime       @default(now())
 
   @@index([userId])
   @@index([listingId])
@@ -82,4 +87,34 @@ model Review {
 
   @@index([userId])
   @@index([listingId])
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  content     String
+  isRead      Boolean  @default(false)
+  sender      User     @relation("sender", fields: [senderId], references: [id])
+  receiver    User     @relation("receiver", fields: [receiverId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
 }

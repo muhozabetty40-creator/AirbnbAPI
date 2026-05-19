@@ -106,3 +106,67 @@ export const deleteBooking = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+export const approveBooking = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid booking id" });
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { listing: true, user: true },
+    });
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Verify the user is the listing owner
+    const listing = await prisma.listing.findUnique({ where: { id: booking.listingId } });
+    if (listing?.userId !== req.userId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: {
+        status: "confirmed",
+        approvedAt: new Date(),
+      },
+      include: { listing: true, user: true },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid booking id" });
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: { listing: true, user: true },
+    });
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Verify the user is either the booking owner or listing owner
+    const listing = await prisma.listing.findUnique({ where: { id: booking.listingId } });
+    if (booking.userId !== req.userId && listing?.userId !== req.userId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: {
+        status: "cancelled",
+        cancelledAt: new Date(),
+      },
+      include: { listing: true, user: true },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
