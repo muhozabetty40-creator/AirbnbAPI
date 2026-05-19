@@ -73,9 +73,9 @@ class ApiService {
     return "An error occurred";
   }
 
+  // Authentication
   async login(email: string, password: string): Promise<LoginResponse> {
     const body = { email, password };
-    console.log("Sending login request:", body);
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: this.getHeaders(),
@@ -85,7 +85,6 @@ class ApiService {
     if (!response.ok) {
       const error: ApiError = await response.json();
       const errorMessage = this.extractErrorMessage(error);
-      console.error("Login error response:", error);
       throw new Error(errorMessage);
     }
 
@@ -101,7 +100,6 @@ class ApiService {
     role: string = "GUEST"
   ): Promise<RegisterResponse> {
     const body = { name, email, username, password, phone, role };
-    console.log("Sending register request:", body);
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: this.getHeaders(),
@@ -111,7 +109,6 @@ class ApiService {
     if (!response.ok) {
       const error: ApiError = await response.json();
       const errorMessage = this.extractErrorMessage(error);
-      console.error("Register error response:", error);
       throw new Error(errorMessage);
     }
 
@@ -136,6 +133,7 @@ class ApiService {
     return user ? JSON.parse(user) : null;
   }
 
+  // Profile
   async updateProfile(data: {
     name?: string;
     username?: string;
@@ -152,7 +150,6 @@ class ApiService {
     if (!response.ok) {
       const error: ApiError = await response.json();
       const errorMessage = this.extractErrorMessage(error);
-      console.error("Update profile error:", error);
       throw new Error(errorMessage);
     }
 
@@ -189,13 +186,13 @@ class ApiService {
     if (!response.ok) {
       const error: ApiError = await response.json();
       const errorMessage = this.extractErrorMessage(error);
-      console.error("Upload avatar error:", error);
       throw new Error(errorMessage);
     }
 
     return response.json();
   }
 
+  // Listings
   async createListing(data: {
     title: string;
     description: string;
@@ -223,7 +220,6 @@ class ApiService {
     if (!response.ok) {
       const error: ApiError = await response.json();
       const errorMessage = this.extractErrorMessage(error);
-      console.error("Create listing error:", error);
       throw new Error(errorMessage);
     }
 
@@ -250,71 +246,6 @@ class ApiService {
 
   async getListingById(id: string) {
     const response = await fetch(`${API_BASE_URL}/listings/${id}`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
-  async createBooking(data: {
-    listingId: string;
-    checkIn: string;
-    checkOut: string;
-    guests: number;
-    total: number;
-  }) {
-    const user = this.getUser();
-    if (!user) throw new Error("User not authenticated");
-
-    const response = await fetch(`${API_BASE_URL}/bookings`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify({
-        ...data,
-        userId: user.id,
-      }),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      console.error("Create booking error:", error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
-  async getMyBookings() {
-    const user = this.getUser();
-    if (!user) throw new Error("User not authenticated");
-
-    const response = await fetch(`${API_BASE_URL}/users/${user.id}/bookings`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
-  async getMyListings() {
-    const user = this.getUser();
-    if (!user) throw new Error("User not authenticated");
-
-    const response = await fetch(`${API_BASE_URL}/users/${user.id}/listings`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -370,6 +301,71 @@ class ApiService {
     return response.json();
   }
 
+  async getMyListings() {
+    const user = this.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const response = await fetch(`${API_BASE_URL}/users/${user.id}/listings`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      const errorMessage = this.extractErrorMessage(error);
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  }
+
+  // Bookings
+  async createBooking(data: {
+    listingId: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+    total: number;
+  }) {
+    const user = this.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const response = await fetch(`${API_BASE_URL}/bookings`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        ...data,
+        userId: user.id,
+      }),
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      const errorMessage = this.extractErrorMessage(error);
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  }
+
+  async getMyBookings() {
+    const user = this.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const response = await fetch(`${API_BASE_URL}/users/${user.id}/bookings`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      const errorMessage = this.extractErrorMessage(error);
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  }
+
   async getBookingById(id: string) {
     const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
       method: "GET",
@@ -385,9 +381,9 @@ class ApiService {
     return response.json();
   }
 
-  async cancelBooking(id: string) {
-    const response = await fetch(`${API_BASE_URL}/bookings/${id}/cancel`, {
-      method: "POST",
+  async approveBooking(bookingId: string) {
+    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/approve`, {
+      method: "PUT",
       headers: this.getHeaders(),
     });
 
@@ -400,6 +396,22 @@ class ApiService {
     return response.json();
   }
 
+  async cancelBooking(bookingId: string) {
+    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
+      method: "PUT",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      const errorMessage = this.extractErrorMessage(error);
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  }
+
+  // Reviews
   async getReviews() {
     const user = this.getUser();
     if (!user) throw new Error("User not authenticated");
@@ -438,78 +450,11 @@ class ApiService {
     return response.json();
   }
 
-  async getMessages() {
-    const user = this.getUser();
-    if (!user) throw new Error("User not authenticated");
-
-    const response = await fetch(`${API_BASE_URL}/users/${user.id}/messages`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
+  // Messages
   async sendMessage(data: {
-    recipientId: string;
+    receiverId: string;
     content: string;
   }) {
-    const response = await fetch(`${API_BASE_URL}/messages`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
-  async getWallet() {
-    const user = this.getUser();
-    if (!user) throw new Error("User not authenticated");
-
-    const response = await fetch(`${API_BASE_URL}/users/${user.id}/wallet`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
-  async withdrawFromWallet(amount: number) {
-    const response = await fetch(`${API_BASE_URL}/wallet/withdraw`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify({ amount }),
-    });
-
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      const errorMessage = this.extractErrorMessage(error);
-      throw new Error(errorMessage);
-    }
-
-    return response.json();
-  }
-
-  async sendMessage(data: { receiverId: string; content: string }) {
     const response = await fetch(`${API_BASE_URL}/messages`, {
       method: "POST",
       headers: this.getHeaders(),
@@ -574,6 +519,7 @@ class ApiService {
     return response.json();
   }
 
+  // Notifications
   async getNotifications() {
     const response = await fetch(`${API_BASE_URL}/notifications`, {
       method: "GET",
@@ -634,9 +580,13 @@ class ApiService {
     return response.json();
   }
 
-  async approveBooking(bookingId: string) {
-    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/approve`, {
-      method: "PUT",
+  // Wallet
+  async getWallet() {
+    const user = this.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const response = await fetch(`${API_BASE_URL}/users/${user.id}/wallet`, {
+      method: "GET",
       headers: this.getHeaders(),
     });
 
@@ -649,10 +599,11 @@ class ApiService {
     return response.json();
   }
 
-  async cancelBooking(bookingId: string) {
-    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
-      method: "PUT",
+  async withdrawFromWallet(amount: number) {
+    const response = await fetch(`${API_BASE_URL}/wallet/withdraw`, {
+      method: "POST",
       headers: this.getHeaders(),
+      body: JSON.stringify({ amount }),
     });
 
     if (!response.ok) {

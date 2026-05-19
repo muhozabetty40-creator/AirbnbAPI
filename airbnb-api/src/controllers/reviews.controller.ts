@@ -85,3 +85,82 @@ export const deleteReview = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 };
+
+
+export const getAllReviews = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
+
+    const cacheKey = `reviews:all:${p}:${l}`;
+    const cached = getCache(cacheKey);
+    if (cached) return res.json(cached);
+
+    const [data, total] = await Promise.all([
+      prisma.review.findMany({
+        skip,
+        take: l,
+        include: {
+          user: { select: { name: true, avatar: true } },
+          listing: { select: { title: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.review.count(),
+    ]);
+
+    const result = { data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } };
+    setCache(cacheKey, result, 30);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createReviewFromBooking = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { bookingId, rating, comment } = req.body;
+
+    if (!bookingId || rating === undefined || !comment) {
+      return res.status(400).json({ message: "Missing required fields: bookingId, rating, comment" });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { listing: true, user: true },
+    });
+
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Check if review already exists for this booking
+    const existingReview = await prisma.review.findFirst({
+      where: { bookingId },
+    });
+
+    if (existingReview) {
+      return res.status(400).json({ message: "Review already exists for this booking" });
+    }
+
+    const review = await prisma.review.create({
+      data: {
+        bookingId,
+        userId: booking.userId,
+        listingId: booking.listingId,
+        rating: Number(rating),
+        comment,
+      },
+      include: {
+        user: { select: { name: true, avatar: true } },
+        listing: { select: { title: true } },
+      },
+    });
+
+    res.status(201).json(review);
+  } catch (error) {
+    next(error);
+  }
+};

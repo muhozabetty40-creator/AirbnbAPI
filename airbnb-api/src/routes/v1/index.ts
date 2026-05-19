@@ -6,6 +6,7 @@ import bookingsRouter from "./bookings.routes.js";
 import reviewsRouter from "./reviews.routes.js";
 import messagesRouter from "./messages.routes.js";
 import notificationsRouter from "./notifications.routes.js";
+import walletRouter from "./wallet.routes.js";
 import aiRouter from "./ai.routes.js";
 import { getListingReviews, createReview } from "../../controllers/reviews.controller.js";
 import { strictLimiter } from "../../middlewares/rateLimiter.js";
@@ -22,6 +23,7 @@ v1Router.use("/bookings", bookingsRouter);
 v1Router.use("/reviews", reviewsRouter);
 v1Router.use("/messages", messagesRouter);
 v1Router.use("/notifications", notificationsRouter);
+v1Router.use("/wallet", walletRouter);
 v1Router.use("/ai", aiRouter);
 
 // Listing reviews nested routes

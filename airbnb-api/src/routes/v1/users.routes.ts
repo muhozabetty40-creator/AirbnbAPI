@@ -10,6 +10,9 @@ import {
   deleteUser,
   getUserBookings,
   getUserListings,
+  getUserReviews,
+  getUserMessages,
+  getUserWallet,
   getProfile,
   updateProfile,
   uploadAvatar,
@@ -25,6 +28,9 @@ router.post("/upload-avatar", authenticate, upload.single("file"), uploadAvatar)
 router.get("/", getAllUsers);
 router.get("/:id/bookings", getUserBookings);
 router.get("/:id/listings", getUserListings);
+router.get("/:id/reviews", getUserReviews);
+router.get("/:id/messages", getUserMessages);
+router.get("/:id/wallet", getUserWallet);
 router.get("/:id", getUserById);
 router.post("/", strictLimiter, createUser);
 router.put("/:id", strictLimiter, updateUser);

@@ -233,3 +233,104 @@ export const getUserListings = async (req: Request, res: Response, next: NextFun
     next(error);
   }
 };
+
+
+export const getUserReviews = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
+
+    const [data, total] = await Promise.all([
+      prisma.review.findMany({
+        where: { userId: id },
+        skip,
+        take: l,
+        include: { booking: { include: { listing: { select: { title: true } } } } },
+      }),
+      prisma.review.count({ where: { userId: id } }),
+    ]);
+
+    res.json({ data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserMessages = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const { page, limit } = req.query;
+    const { page: p, limit: l, skip } = parsePage(page, limit);
+
+    const [data, total] = await Promise.all([
+      prisma.message.findMany({
+        where: {
+          OR: [
+            { senderId: id },
+            { receiverId: id },
+          ],
+        },
+        skip,
+        take: l,
+        include: {
+          sender: { select: { id: true, name: true, avatar: true } },
+          receiver: { select: { id: true, name: true, avatar: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.message.count({
+        where: {
+          OR: [
+            { senderId: id },
+            { receiverId: id },
+          ],
+        },
+      }),
+    ]);
+
+    res.json({ data, meta: { total, page: p, limit: l, totalPages: Math.ceil(total / l) } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserWallet = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(400).json({ message: "Invalid user id" });
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Calculate earnings from confirmed bookings
+    const bookings = await prisma.booking.findMany({
+      where: {
+        listing: { userId: id },
+        status: "confirmed",
+      },
+      include: { listing: true },
+    });
+
+    const totalEarnings = bookings.reduce((sum, booking) => sum + booking.total, 0);
+
+    res.json({
+      userId: id,
+      totalEarnings,
+      bookings: bookings.length,
+      balance: totalEarnings,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
